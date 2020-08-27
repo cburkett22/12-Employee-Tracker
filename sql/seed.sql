@@ -26,10 +26,10 @@ CREATE TABLE employee (
 );
 
 INSERT INTO department (name)
-VALUES ();
+VALUES ("Sales"), ("Engineering"), ("Legal"), ("Finance"), ("Human Resources");
 
 INSERT INTO role (title, salary, department_id)
-VALUES ();
+VALUES ("Sales Lead", 75000), ("Sales Representative", 50000);
 
 INSERT INTO employee (first_name, last_name. role_id, manager_id)
 VALUES ();
