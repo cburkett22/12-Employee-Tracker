@@ -2,6 +2,11 @@ const mysql = require("mysql");
 const inquirer = require("inquirer");
 const cTable = require("console.table");
 
+// Classes
+const Employee = require("./lib/Employee");
+const Role = require("./lib/Role");
+const Department = require("./lib/Department");
+
 var connection = mysql.createConnection({
     host: "localhost",
     port: 3306,
@@ -67,53 +72,58 @@ function start() {
 }
 
 function viewAllEmployees() { // DONE
-    var query = "SELECT first_name, last_name FROM employee";
+    var query = "SELECT employee_role.id, employee_role.title, employee_role.salary, employee_role.department_id, employee.id, employee.first_name, employee.last_name, employee.role_id, employee.manager_name ";
+    query += "FROM employee_role INNER JOIN employee ON (employee_role.id = employee.role_id) ";
+    query += "ORDER BY employee_role.id";
+
     connection.query(query, function(err, res) {
-        for (i = 0; i < res.length; i++) {
-            console.log(res[i].first_name, res[i].last_name, res[i].role_id);
+        if (err) {
+            throw err;
         }
+        var employees = [];
+        
+        for (var i = 0; i < res.length; i++) {
+          const employee = new Employee(res[i].id, res[i].first_name, res[i].last_name, res[i].title, res[i].salary, res[i].manager_name);
+          employees.push(employee);
+        }
+        console.table(employees);
         start();
     });
-
 }
 
-function viewAllEmployeesByDepartment() { // DONE
+function viewAllEmployeesByDepartment() { // NOT DONE ADD CONSOLE.TABLE
+    console.log(`
+    Departments:
+    1. Sales
+    2. Engineering
+    3. Legal
+    4. Finance
+    5. Human Resources
+    `);
     inquirer.prompt(
         {
             type: "input",
             name: "department",
-            message: "Enter department name:"
+            message: "Enter department ID #:"
         }
     ).then(function(answer) {
-        var query = `SELECT id, department_name FROM department`;
-        var deptID;
-        connection.query(query, function(err, res) {
-            for (i = 0; i < res.length; i++) {
-                if (res[i].department_name == answer.department) {
-                    console.log(res[i].id, res[i].department_name);
-                    deptID = res[i].id;
-                }
+        var query = "SELECT department.id, department.department_name, employee_role.id, employee_role.title, employee_role.department_id, employee_role.salary, employee.id, employee.first_name, employee.last_name, employee.role_id, employee.manager_name ";
+        query += "FROM department INNER JOIN employee_role ON (department.id = employee_role.department_id) ";
+        query += "INNER JOIN employee ON (employee_role.id = employee.role_id) ";
+        query += "WHERE (department.id = ? AND employee_role.department_id = ?) ";
+        query += "ORDER BY department.id";
+        
+        connection.query(query, [answer.department, answer.department], function(err, res) {
+            if (err) {
+                throw err;
             }
-        });
+            var employees = [];
 
-        var query2 = `SELECT id, title, department_id FROM employee_role`;
-        var roleID = [];
-        connection.query(query2, function(err, res) {
-            for (i = 0; i < res.length; i++) {
-                if (res[i].department_id == deptID) {
-                    console.log(res[i].id, res[i].title);
-                    roleID.push(res[i].id);
-                }
+            for (var i = 0; i < res.length; i++) {
+              const employee = new Employee(res[i].id, res[i].first_name, res[i].last_name, res[i].title, res[i].salary, res[i].manager_name);
+              employees.push(employee);
             }
-        });
-
-        var query3 = `SELECT id, first_name, last_name, role_id FROM employee`;
-        connection.query(query3, function(err, res) {
-            for (i = 0; i < res.length; i++) {
-                if (roleID.includes(res[i].role_id) == true) {
-                    console.log(`\nfinal results`, res[i].id, res[i].first_name, res[i].last_name);
-                }
-            }
+            console.table(employees);
             start();
         });
     });
@@ -138,8 +148,13 @@ function addEmployee() { // ONLY ADDS/PROMPTS FIRST NAME
         },
         {
             name: "role",
-            type: "list",
+            type: "input",
             message: "What is the employees role?",
+        },
+        {
+            name: "department",
+            type: "list",
+            message: "What is the employees department?",
             choices: [
                 "Sales (ID: 1)",
                 "Engineering (ID: 2)",
@@ -180,7 +195,7 @@ function updateEmployeeRole() {
 function updateEmployeeManager() {
 
 }
-function viewAllRoles() { // DONE
+function viewAllRoles() { // NOT DONE ADD CONSOLE.TABLE
     var query = "SELECT title, department_id FROM employee_role";
     connection.query(query, function(err, res) {
         for (i = 0; i < res.length; i++) {
@@ -191,7 +206,7 @@ function viewAllRoles() { // DONE
 
 }
 
-function addRole() { // DONE
+function addRole() { // NOT DONE ADD CONSOLE.TABLE
     inquirer.prompt([
         {
             type: "input",
