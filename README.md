@@ -5,6 +5,8 @@
 ## Description
 As a Full-Stack Web Developer, I have created an application that will allow a company to view, add, remove, and update their employees all in one location. I have created this application so that they can see all of their employees in one location. In order to achieve this, I will utilize Express.js to save user input.
 
+[![Application screenshot](https://www.screencast.com/t/Q8N19qmr)]()
+
 ## Table of Contents
 
 * [Title](#Title)
